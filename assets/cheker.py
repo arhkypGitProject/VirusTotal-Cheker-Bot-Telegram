@@ -1,5 +1,6 @@
 import requests
 from assets.config import API_KEY
+from pathlib import Path
 
 def ip_checker(ip_address):
     headers = {
@@ -84,6 +85,30 @@ def domain_checker(domain):
         "total_votes": attributes.get("total_votes", {"harmless": 0, "malicious": 0}),
         "last_analysis_stats": attributes.get("last_analysis_stats", {"malicious": 0, "suspicious": 0, "undetected": 0, "harmless": 0}),
         "url": data.get("data", {}).get("links", {}).get("self", f"https://www.virustotal.com/gui/domain/{domain}")
+    }
+
+
+def send_file_to_virustotal(file_path: Path):
+    url = "https://www.virustotal.com/api/v3/files"
+
+    headers = {
+        "x-apikey": API_KEY
+    }
+
+    with open(file_path, "rb") as f:
+        files = {
+            "file": (file_path.name, f)
+        }
+
+        response = requests.post(url, headers=headers, files=files)
+
+    if response.status_code != 200:
+        return {"error": "Upload failed"}
+
+    data = response.json()
+    return {
+        "analysis_id": data["data"]["id"],
+        "analysis_url": data["data"]["links"]["self"]
     }
 
 
