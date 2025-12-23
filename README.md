@@ -1,119 +1,168 @@
-# VirusTotal Checker Telegram Bot
+# VirusTotal Telegram Bot
 
-A professional Telegram bot for security analysis of IP addresses, URLs, and domains using the VirusTotal API!
+This Telegram bot allows you to check files, URLs, domains, and IP addresses using the VirusTotal API.
 
-## Project Overview
+## Project Structure
 
-VirusTotal Checker Bot is a powerful cybersecurity analysis tool that enables users to check IP addresses, URLs, and domains through integration with the VirusTotal API. The bot provides detailed reports on reputation and threats, helping assess the security of network resources.
+```
+├── main.py                    # Main bot startup file
+├── assets/                    # Helper modules
+│   ├── commands.py           # Command and callback handlers
+│   ├── cheker.py             # Functions for working with VirusTotal API
+│   ├── dialog.py             # FSM (Finite State Machine) states
+│   └── config.py             # Configuration data (tokens)
+```
 
-BOT BY: [GitHub](https://github.com/arhkypGitProject/ArkhypDanylov-Portfolio)
+## Installation and Setup
 
-## Key Features
-
-- **IP Analysis** — Check IP addresses for threats and suspicious activity
-- **URL Scanning** — Analyze web links through VirusTotal
-- **Domain Analysis** — Verify domain reputation and security
-- **Detailed Reporting** — Statistics on malicious, suspicious, and harmless assessments
-- **Asynchronous Processing** — Fast responses without blocking operations
-- **State Management** — User session handling with FSM (Finite State Machine)
-
-## Technology Stack
-
-- **Python 3.8+** — Core programming language
-- **aiogram 3.x** — Asynchronous Telegram Bot API framework
-- **VirusTotal API** — Security intelligence and threat detection
-- **Asyncio** — Asynchronous I/O operations
-- **Requests** — HTTP library for API communication
-
-## Installation
-
-### Prerequisites
-
-1. Python 3.8 or higher
-2. Telegram Bot Token from [@BotFather](https://t.me/botfather)
-3. VirusTotal API key from [VirusTotal](https://www.virustotal.com)
-
-### Setup Instructions
-
-1. Clone the repository:
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/arhkypGitProject/VirusTotal-Cheker-Bot-Telegram.git
 cd VirusTotal-Cheker-Bot-Telegram
 ```
 
-2. Install required dependencies:
+### 2. Create Virtual Environment (Recommended)
 ```bash
-pip install aiogram==3.11.1 requests
+python -m venv venv
+
+# For Linux/Mac:
+source venv/bin/activate
+
+# For Windows:
+venv\Scripts\activate
 ```
 
-3. Configure API credentials:
-   - Open `config.py`
-   - Replace `TOKEN` with your Telegram Bot token
-   - Replace `API_KEY` with your VirusTotal API key
+### 3. Install Dependencies
+```bash
+pip install aiogram requests
+```
 
-4. Run the bot:
+### 4. Configuration Setup
+Edit the `assets/config.py` file:
+
+```python
+TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
+API_KEY = 'YOUR_VIRUSTOTAL_API_KEY'
+```
+
+**Where to get tokens:**
+- **Telegram Bot Token**: Get it from [@BotFather](https://t.me/BotFather)
+- **VirusTotal API Key**: Register on [VirusTotal](https://www.virustotal.com/) and get your API key from the dashboard
+
+### 5. Create Required Folders
+The bot will automatically create a `downloads` folder for temporary file storage on first run.
+
+## Running the Bot
+
 ```bash
 python main.py
 ```
 
-## Usage Guide
+Once running, the bot will be ready to use. Send the `/start` command in Telegram to begin.
 
-### Available Commands
+## VirusTotal API Integration
 
-- **/start** — Launch the bot and display the main menu
-- **IP SCAN** — Analyze IP addresses for security threats
-- **URL CHECK** — Scan URLs for malicious content
-- **DOMAIN CHECK** — Verify domain security and reputation
-- **FILE CHECK** — Check your files for viruses!
+### Supported Functions:
 
-### How It Works
+#### 1. **IP Addresses** (`ip_checker`)
+- Check IP address reputation
+- Get ASN, country, and owner information
+- Last analysis statistics
 
-1. Users interact with the bot through inline keyboard buttons
-2. The bot requests the target (IP, URL, or domain) from the user
-3. The request is sent to VirusTotal API for analysis
-4. Results are parsed and presented in a structured format
-5. Detailed security statistics are displayed to the user
+#### 2. **URL Addresses** (`url_cheker`)
+- Submit URLs for scanning
+- Get analysis ID for tracking
 
-## API Integration
+#### 3. **Domains** (`domain_checker`)
+- Domain reputation check
+- Registrar information
+- Voting statistics
 
-The bot integrates with the following VirusTotal API endpoints:
+#### 4. **Files** (`send_file_to_virustotal`)
+- Upload files up to 650MB (VirusTotal limit)
+- File analysis with multiple antivirus engines
 
-- `GET /api/v3/ip_addresses/{ip_address}` — IP address analysis
-- `POST /api/v3/urls` — URL scanning and analysis
-- `GET /api/v3/domains/{domain}` — Domain reputation check
+#### 5. **Analysis Reports** (`analysis_report`)
+- Get results by analysis ID
+- Check scanning status
+- View detection statistics
 
-## Important Notes
+## Bot Features
 
-- This tool provides **informational data only** and is not a replacement for antivirus software
-- Rate limits apply based on your VirusTotal API plan
-- Always respect privacy and legal regulations when scanning third-party resources
-- The bot does not store or log user data or scan results
+### Main Menu Commands:
+- `/start` - Display main menu with all options
 
-## Security Considerations
+### Available Checks:
+1. **IP Scan** - Check IP address reputation
+2. **File Check** - Upload and scan files
+3. **URL Check** - Analyze suspicious URLs
+4. **Domain Check** - Verify domain reputation
+5. **URL/File Analysis** - Check existing analysis results using ID
 
-- API keys are stored locally in configuration files
-- Input validation is performed on user-provided data
-- The bot uses official VirusTotal API with encrypted connections
-- No sensitive user data is persisted
+### Technical Implementation:
 
-## License
+#### FSM (Finite State Machine)
+The bot uses aiogram's FSM for managing user states:
+- `IPScan.waiting_for_ip`
+- `URLScan.waiting_for_url`
+- `DOMAINScan.waiting_for_domain`
+- `FILEScan.waiting_for_file`
+- `URLandFILEScan.waiting_for_id`
 
-This project is open-source and available under the MIT License.
+#### Async Operations
+- All VirusTotal API calls are wrapped in `asyncio.to_thread()` to prevent blocking
+- File downloads use async bot methods
+- Temporary files are automatically cleaned up
 
-## Contributing
+#### Error Handling
+- Comprehensive try-except blocks
+- User-friendly error messages
+- State clearing on errors
 
-Contributions are welcome. Please follow these steps:
+## API Rate Limits
+- VirusTotal API has rate limits based on your subscription
+- Free tier: 4 requests/minute, 500 requests/day
+- Consider implementing delays for high-volume usage
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+## Security Notes
+- This bot is for informational purposes only
+- Not a replacement for antivirus software
+- Files are deleted immediately after analysis
+- API keys should be kept secure
+
+## Customization
+You can modify:
+- Response formats in `commands.py`
+- API endpoints in `cheker.py`
+- Menu structure and buttons
+- Logging configuration in `main.py`
+
+## Troubleshooting
+
+### Common Issues:
+1. **API Key Errors**: Ensure your VirusTotal API key is valid
+2. **File Size Limits**: VirusTotal has 650MB file limit
+3. **Rate Limiting**: Implement delays if hitting API limits
+4. **State Issues**: Use `/start` to reset bot state if needed
+
+## Dependencies
+- `aiogram==3.x` - Telegram Bot Framework
+- `requests==2.3x` - HTTP library for API calls
+
+## Disclaimer
+This bot uses VirusTotal's public API. All scanning is performed by VirusTotal, not locally. Results are for informational purposes only. Always use multiple security solutions for comprehensive protection.
 
 ## Support
+For issues or questions:
+1. Check the VirusTotal API documentation
+2. Review aiogram framework documentation
+3. Examine error logs for specific issues
 
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Check the project documentation
-
-**Disclaimer**: This bot utilizes the VirusTotal API. Users must comply with VirusTotal's terms of service and usage policies. The developer is not responsible for misuse of this tool!
+## Future Improvements
+Potential enhancements:
+- Add caching for frequently checked items
+- Implement queue system for file uploads
+- Add support for more VirusTotal endpoints
+- Create admin panel for monitoring
+- Add multilingual support
+- Implement user statistics and analytics
