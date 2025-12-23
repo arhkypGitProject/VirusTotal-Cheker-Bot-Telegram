@@ -3,6 +3,12 @@
 This Telegram bot allows you to check files, URLs, domains, and IP addresses using the VirusTotal API.
 
 <div align="center">
+  <a href="https://github.com/arhkypGitProject" target="_blank">
+    <img src="https://img.shields.io/static/v1?message=GitHub&logo=github&label=&color=181717&logoColor=white&style=for-the-badge" height="25" />
+  </a>
+</div>
+
+<div align="center">
   <img src="https://visitor-badge.laobi.icu/badge?page_id=arhkypGitProject.VirusTotal-Cheker-Bot-Telegram" />
 </div>
 
