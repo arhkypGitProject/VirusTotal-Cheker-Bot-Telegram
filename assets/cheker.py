@@ -112,6 +112,28 @@ def send_file_to_virustotal(file_path: Path):
     }
 
 
+def analysis_report(analysis_id: str) -> dict:
+    url = f"https://www.virustotal.com/api/v3/analyses/{analysis_id}"
+    headers = {
+        "accept": "application/json",
+        "x-apikey": API_KEY
+    }
+
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    data = response.json()
+
+    attributes = data.get("data", {}).get("attributes", {})
+    stats = attributes.get("stats", {})
+
+    return {
+        "malicious": stats.get("malicious", 0),
+        "suspicious": stats.get("suspicious", 0),
+        "harmless": stats.get("harmless", 0),
+        "undetected": stats.get("undetected", 0),
+        "status": attributes.get("status", "unknown"),
+        "permalink": f"https://www.virustotal.com/gui/analysis/{analysis_id}"
+    }
 
 
 

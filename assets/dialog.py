@@ -11,3 +11,6 @@ class DOMAINScan(StatesGroup):
 
 class FILEScan(StatesGroup):
     waiting_for_file = State()
+
+class URLandFILEScan(StatesGroup):
+    waiting_for_id = State()

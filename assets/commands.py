@@ -1,8 +1,8 @@
 from aiogram import Router, types
 from aiogram.filters import Command
-from assets.cheker import ip_checker, url_cheker, domain_checker, send_file_to_virustotal
+from assets.cheker import ip_checker, url_cheker, domain_checker, send_file_to_virustotal, analysis_report
 from aiogram.fsm.context import FSMContext
-from assets.dialog import IPScan, URLScan, DOMAINScan, FILEScan
+from assets.dialog import IPScan, URLScan, DOMAINScan, FILEScan, URLandFILEScan
 import asyncio
 from pathlib import Path
 
@@ -210,4 +210,34 @@ async def handle_file(message: types.Message, state: FSMContext):
         if file_path.exists():
             file_path.unlink()
             print(f"Temporary file deleted: {file_name}")
+        await state.clear()
+
+@route.callback_query(lambda c: c.data == "urlfile_analysis")
+async def analysis_callback(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.answer("Please send the Analysis ID:")
+    await state.set_state(URLandFILEScan.waiting_for_id)
+
+@route.message(lambda message: True, URLandFILEScan.waiting_for_id)
+async def check_analysis_id(message: types.Message, state: FSMContext):
+    analysis_id = message.text.strip()
+    await message.answer("Fetching analysis report...")
+
+    try:
+        result = await asyncio.to_thread(analysis_report, analysis_id)
+
+        report_text = (
+            f"🌐 VirusTotal Analysis Report\n"
+            f"Status: {result['status']}\n"
+            f"-Malicious: {result['malicious']}\n"
+            f"-Suspicious: {result['suspicious']}\n"
+            f"-Harmless: {result['harmless']}\n"
+            f"-Undetected: {result['undetected']}\n"
+            f"Source: VirusTotal.com\n"
+            "⚠️ Informational only, not an antivirus!"
+        )
+        await message.answer(report_text, parse_mode="Markdown", disable_web_page_preview=True)
+
+    except Exception as e:
+        await message.answer(f"❌ Error: {e}")
+    finally:
         await state.clear()
